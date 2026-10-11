@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="appSubtitle">Bangladesh Personal Income Tax Calculator</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar no-print">
+    <div>
+      <h1 data-i18n="appTitle">Income Tax BD</h1>
+      <p class="subtitle" data-i18n="appSubtitle">Bangladesh Personal Income Tax Calculator</p>
+    </div>
+    <button id="lang-toggle" class="lang-btn" type="button" aria-label="Switch language">বাংলা</button>
+  </header>
+  <p class="ay-badge no-print" data-i18n="ayBadge">AY 2026–27 · Income Year FY 2025–26</p>
+
+  <main>
+    <section class="card no-print" aria-labelledby="calc-heading">
+      <h2 id="calc-heading" data-i18n="calcTitle">Tax calculator</h2>
+      <form id="tax-form" novalidate>
+        <div class="field">
+          <label for="category" data-i18n="categoryLabel">Taxpayer category</label>
+          <select id="category" name="category">
+            <option value="general" data-i18n="cat_general">General individual</option>
+            <option value="women_senior" data-i18n="cat_women_senior">Women &amp; senior citizens (65+)</option>
+            <option value="disabled_tg" data-i18n="cat_disabled_tg">Third gender &amp; persons with disabilities</option>
+            <option value="freedom_fighter" data-i18n="cat_freedom_fighter">Gazetted war-wounded freedom fighters / July fighters</option>
+          </select>
+          <p class="hint" id="threshold-hint"></p>
+        </div>
+
+        <div class="field">
+          <label for="income" data-i18n="incomeLabel">Taxable income (BDT)</label>
+          <input id="income" name="income" type="text" inputmode="decimal"
+                 data-i18n-ph="incomePlaceholder" placeholder="e.g. 675,000" autocomplete="off">
+          <p class="error" id="err-income" role="alert"></p>
+        </div>
+
+        <fieldset class="field floor-group">
+          <legend data-i18n="floorLegend">Minimum tax</legend>
+          <label class="radio"><input type="radio" name="floor" value="existing"> <span data-i18n="floorExisting">Existing taxpayer (৳5,000)</span></label>
+          <label class="radio"><input type="radio" name="floor" value="new"> <span data-i18n="floorNew">New taxpayer (৳1,000)</span></label>
+          <label class="radio"><input type="radio" name="floor" value="none" checked> <span data-i18n="floorNone">None</span></label>
+          <div class="custom-floor">
+            <label for="floor-custom" data-i18n="floorCustomLabel">Custom floor (optional, overrides above)</label>
+            <input id="floor-custom" type="text" inputmode="decimal"
+                   data-i18n-ph="floorCustomPlaceholder" placeholder="e.g. 2,500" autocomplete="off">
+            <p class="error" id="err-floor" role="alert"></p>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" class="btn primary" data-i18n="calcBtn">Calculate</button>
+          <button type="button" id="reset-btn" class="btn" data-i18n="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card print-only-card" id="results-card" aria-labelledby="results-heading" aria-live="polite">
+      <h2 id="results-heading" data-i18n="resultsTitle">Tax breakdown</h2>
+      <div id="results-empty" class="empty">
+        <p data-i18n="resultsEmpty">Enter your income and press Calculate to see your tax breakdown.</p>
+      </div>
+      <div id="results-body" hidden>
+        <p class="applied" id="applied-line"></p>
+        <div class="table-scroll">
+        <table id="breakdown-table">
+          <thead>
+            <tr>
+              <th data-i18n="colSlab">Slab</th>
+              <th class="num" data-i18n="colPortion">Taxable portion</th>
+              <th class="num" data-i18n="colRate">Rate</th>
+              <th class="num" data-i18n="colTax">Tax</th>
+            </tr>
+          </thead>
+          <tbody id="breakdown-body"></tbody>
+          <tfoot>
+            <tr><td colspan="3" data-i18n="grossTax">Gross tax</td><td class="num" id="gross-cell"></td></tr>
+          </tfoot>
+        </table>
+        </div>
+        <dl class="summary">
+          <div class="sum-row" id="floor-row"><dt data-i18n="floorLineLabel">Minimum-tax floor</dt><dd id="floor-cell"></dd></div>
+          <div class="sum-row payable"><dt data-i18n="payable">Total tax payable</dt><dd id="payable-cell"></dd></div>
+          <div class="sum-row"><dt data-i18n="effRate">Effective tax rate</dt><dd id="rate-cell"></dd></div>
+          <div class="sum-row"><dt data-i18n="monthlyEq">Monthly equivalent</dt><dd id="monthly-cell"></dd></div>
+        </dl>
+        <button id="print-btn" class="btn no-print" type="button" data-i18n="printBtn">Print</button>
+      </div>
+    </section>
+
+    <section class="card no-print" aria-labelledby="history-heading">
+      <h2 id="history-heading" data-i18n="historyTitle">Calculation history</h2>
+      <div id="history-empty" class="empty">
+        <p data-i18n="historyEmpty">No saved calculations yet.</p>
+      </div>
+      <ul id="history-list" class="history"></ul>
+      <div class="actions" id="history-actions" hidden>
+        <button type="button" id="export-btn" class="btn" data-i18n="exportBtn">Export JSON</button>
+        <button type="button" id="import-btn" class="btn" data-i18n="importBtn">Import JSON</button>
+        <button type="button" id="clear-btn" class="btn danger" data-i18n="clearBtn">Clear all</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </div>
+      <p class="error" id="import-msg" role="alert"></p>
+      <p class="ok" id="import-ok" role="status"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p class="disclaimer" data-i18n="disclaimer"></p>
+    <p class="source" data-i18n="source"></p>
+    <p class="offline" data-i18n="footerNote"></p>
+  </footer>
+</div>
+<script src="tax.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
